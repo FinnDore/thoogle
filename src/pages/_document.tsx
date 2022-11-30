@@ -14,7 +14,7 @@ export default function document() {
                         src="https://umami.finndore.dev/umami.js"
                     ></script>
                 )}
-                ß
+
                 <link rel="icon" href="/favicon.ico" />
                 <meta
                     property="og:image"

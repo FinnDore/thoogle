@@ -1,5 +1,5 @@
 import { router } from "../trpc";
-import { exampleRouter } from "./completion-awnsers";
+import { exampleRouter } from "./search";
 
 export const appRouter = router({
     example: exampleRouter,

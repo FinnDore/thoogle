@@ -3,20 +3,19 @@
 @tailwind utilities;
 
 .big-shadow {
-  filter: drop-shadow(0px 100px 80px rgba(0, 0, 0, 0.07))
-    drop-shadow(0px 50.0488px 40.0391px rgba(0, 0, 0, 0.0641358))
-    drop-shadow(0px 30.1471px 24.1177px rgba(0, 0, 0, 0.0584285))
-    drop-shadow(0px 19.3198px 15.4559px rgba(0, 0, 0, 0.0527956))
-    drop-shadow(0px 12.5216px 10.0172px rgba(0, 0, 0, 0.0470794))
-    drop-shadow(0px 7.88218px 6.30574px rgba(0, 0, 0, 0.0409591))
-    drop-shadow(0px 4.5288px 3.62304px rgba(0, 0, 0, 0.0337078))
-    drop-shadow(0px 1.99324px 1.59459px rgba(0, 0, 0, 0.0232898));
+    filter: drop-shadow(0px 100px 80px rgba(0, 0, 0, 0.07))
+        drop-shadow(0px 50.0488px 40.0391px rgba(0, 0, 0, 0.0641358))
+        drop-shadow(0px 30.1471px 24.1177px rgba(0, 0, 0, 0.0584285))
+        drop-shadow(0px 19.3198px 15.4559px rgba(0, 0, 0, 0.0527956))
+        drop-shadow(0px 12.5216px 10.0172px rgba(0, 0, 0, 0.0470794))
+        drop-shadow(0px 7.88218px 6.30574px rgba(0, 0, 0, 0.0409591))
+        drop-shadow(0px 4.5288px 3.62304px rgba(0, 0, 0, 0.0337078))
+        drop-shadow(0px 1.99324px 1.59459px rgba(0, 0, 0, 0.0232898));
 }
 
 body {
-  font-family: "IBM Plex Mono", monospace;
 }
 *::selection {
-  background-color: #f3f4f6;
-  color: #1f2937;
+    background-color: #f3f4f6;
+    color: #1f2937;
 }
