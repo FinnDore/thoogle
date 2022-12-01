@@ -99,6 +99,7 @@ const Home: NextPage = () => {
                             answer.current = null;
                             results.current = null;
                             setQuestionMode(e);
+                            if (query) questionMode ? search() : getAnswer();
                         }}
                     >
                         <div
@@ -132,7 +133,10 @@ const Home: NextPage = () => {
                     </Switch>
 
                     {questionMode && !isFetchingAnswer && (
-                        <div className="mb-auto w-[90%] px-4 py-6 md:w-[600px]">
+                        <div className="mb-auto w-[90%] px-4  md:w-[600px]">
+                            <div className="mb-2 text-sm font-bold opacity-50">
+                                Theo would probbally say:
+                            </div>
                             {answer.current}
                         </div>
                     )}
