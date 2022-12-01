@@ -1,39 +1,94 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-
 import { publicProcedure, router } from "../trpc";
 
-export const exampleRouter = router({
+interface YoutubeProps {
+    _offset: Offset;
+}
+
+interface Offset {
+    indexed: boolean;
+    value: Value<number>;
+}
+
+interface Value<T> {
+    case: string;
+    value: T;
+}
+
+export interface YoutubeObjectProps {
+    properties: Properties;
+}
+
+export interface Properties {
+    _description: Description;
+    _image: Image;
+    _title: Title;
+    _url: Url;
+}
+
+export interface Description {
+    indexed: boolean;
+    value: Value<string>;
+}
+
+export interface Image {
+    indexed: boolean;
+    value: Value<string>;
+}
+
+export interface Title {
+    indexed: boolean;
+    value: Value<string>;
+}
+
+export interface Url {
+    indexed: boolean;
+    value: Value<string>;
+}
+
+export const searchRouter = router({
     search: publicProcedure
         .input(z.object({ searchTerm: z.string() }).nullish())
         .query(async ({ input, ctx }) => {
+            console.log("query", input?.searchTerm);
             try {
-                // const res = await ctx.operand.searchWithin({
-                //     query: input?.searchTerm,
-                // });
+                const res = await ctx.operand.searchWithin({
+                    query: input?.searchTerm,
+                });
 
-                // if (!res.matches) {
-                //     return null;
-                // }
+                if (!res.matches) {
+                    return null;
+                }
 
-                // console.log(res);
-                return [
-                    {
-                        url: "https://www.youtube.com/embed/G1RtAmI0-vc?t=120",
-                        score: 0.9,
-                        offset: "1:20",
-                    },
-                    {
-                        url: "https://www.youtube.com/embed/G1RtAmI0-vc?t=120",
-                        score: 0.35,
-                        offset: "1:20",
-                    },
-                    {
-                        url: "https://www.youtube.com/embed/G1RtAmI0-vc?t=120",
-                        score: 0.1,
-                        offset: "1:20",
-                    },
-                ];
+                const results = res.matches.map((m) => {
+                    const offset =
+                        (m.extra?.properties as unknown as YoutubeProps)
+                            ?._offset?.value?.value ?? null;
+
+                    return {
+                        // Look the fuck away ok 🔫
+                        url:
+                            (
+                                res.objects[m.objectId]
+                                    ?.properties as unknown as YoutubeObjectProps
+                            )?.properties?._url?.value?.value?.replace(
+                                "watch?v=",
+                                "embed/"
+                            ) +
+                            "?start=" +
+                            offset,
+                        content: m.content,
+                        score: m.score,
+                        offset,
+                    };
+                });
+
+                Object.keys(res.objects).forEach((x) =>
+                    console.log(JSON.stringify(res.objects[x]?.properties))
+                );
+
+                return results;
             } catch (e) {
                 console.error(e);
                 console.error(
