@@ -1,14 +1,19 @@
 import { ArrowRightIcon } from "@radix-ui/react-icons";
+import { Switch, Thumb } from "@radix-ui/react-switch";
+import { clsx } from "clsx";
 import { type NextPage } from "next";
 import { lazy, Suspense, useRef, useState } from "react";
 import type { RouterOutputs } from "../utils/trpc";
 import { trpc } from "../utils/trpc";
-
 const Score = lazy(() => import("./_score"));
 
 const Home: NextPage = () => {
     // React query sets data to undefined when the query changes / shrug
     const results = useRef<RouterOutputs["searchContent"]["search"] | null>(
+        null
+    );
+
+    const answer = useRef<RouterOutputs["askQuestion"]["askQuestion"] | null>(
         null
     );
     const [query, setQuery] = useState<string>("");
@@ -29,6 +34,26 @@ const Home: NextPage = () => {
             },
         }
     );
+    const {
+        refetch: getAnswer,
+        isFetching: isFetchingAnswer,
+        error: errorAnswer,
+    } = trpc.askQuestion.askQuestion.useQuery(
+        { searchTerm: query },
+        {
+            enabled: false,
+            refetchOnWindowFocus: false,
+            onError() {
+                answer.current = null;
+            },
+            onSuccess(data) {
+                answer.current = data;
+            },
+        }
+    );
+
+    const [questionMode, setQuestionMode] = useState<boolean>(false);
+    const searchOrAnswer = () => (questionMode ? getAnswer() : search());
 
     return (
         <>
@@ -51,50 +76,102 @@ const Home: NextPage = () => {
                             </picture>
                         </div>
                     </div>
-                    <div className="big-shadow min-3rem relative mb-12 flex h-20 w-full justify-center overflow-hidden rounded-2xl border border-[#C9C9C9]/30 bg-[#000]/60 shadow-2xl  md:w-[600px]">
+                    <div className="big-shadow min-3rem relative mb-4 flex h-20 w-full justify-center overflow-hidden rounded-2xl border border-[#C9C9C9]/30 bg-[#000]/60 shadow-2xl  md:w-[600px]">
                         <input
                             className="w-full rounded-2xl border border-none bg-transparent pl-8 text-2xl outline-none"
                             placeholder="Search Theo's channel"
                             onChange={(e) => setQuery(e.target.value)}
-                            onKeyUp={(e) => e.key === "Enter" && search()}
+                            onKeyUp={(e) =>
+                                e.key === "Enter" && searchOrAnswer()
+                            }
                         />
                         <button
-                            className=" absolute right-0 flex h-full w-2/12 bg-transparent"
-                            onClick={() => search()}
+                            className=" absolute right-0 flex h-full w-2/12 bg-transparent text-[#C9C9C9]/30 hover:text-white"
+                            onClick={() => searchOrAnswer()}
                         >
-                            <ArrowRightIcon className="m-auto h-6 w-6 text-[#C9C9C9]/30 transition-colors hover:text-white" />
+                            <ArrowRightIcon className="m-auto h-6 w-6  transition-colors " />
                         </button>
                     </div>
 
-                    <div className="mb-auto">
-                        {results.current?.map((result, i) => (
-                            <div
-                                key={result.url + i}
-                                className="w-[90%] md:w-[600px]"
-                            >
-                                <iframe
-                                    className="mb-4  aspect-video w-full "
-                                    src={result.url}
-                                    title={result.content}
-                                    allowFullScreen
-                                ></iframe>
+                    <Switch
+                        className="text relative mb-4 ml-auto flex h-8 overflow-hidden rounded-md bg-[#000]/60 text-sm"
+                        onCheckedChange={(e) => {
+                            answer.current = null;
+                            results.current = null;
+                            setQuestionMode(e);
+                        }}
+                    >
+                        <div
+                            className={clsx(
+                                "my-auto w-[10ch] flex-1 px-2 transition-opacity",
+                                {
+                                    "opacity-40": !questionMode,
+                                }
+                            )}
+                        >
+                            Ask Theo
+                        </div>
+                        <div
+                            className={clsx(
+                                "my-auto w-[10ch] flex-1 px-2 transition-opacity",
+                                {
+                                    "opacity-40": questionMode,
+                                }
+                            )}
+                        >
+                            Search
+                        </div>
+                        <Thumb
+                            className={clsx(
+                                "absolute -top-1 my-1  h-full w-[10ch] bg-white/10 transition-transform",
+                                {
+                                    "translate-x-full": !questionMode,
+                                }
+                            )}
+                        />
+                    </Switch>
 
-                                <div className="mb-6 flex w-full justify-between text-sm opacity-50">
-                                    <div>time: {result.offset}</div>
+                    {questionMode && !isFetchingAnswer && (
+                        <div className="mb-auto w-[90%] px-4 py-6 md:w-[600px]">
+                            {answer.current}
+                        </div>
+                    )}
+                    {!questionMode && !isFetching && (
+                        <div className="mb-auto">
+                            {results.current?.map((result, i) => (
+                                <div
+                                    key={result.url + i}
+                                    className="w-[90%] md:w-[600px]"
+                                >
+                                    <iframe
+                                        className="mb-4 aspect-video w-full rounded-md"
+                                        src={result.url}
+                                        title={result.content}
+                                        allowFullScreen
+                                    ></iframe>
 
-                                    <Suspense fallback={null}>
-                                        <Score value={result.score} />
-                                    </Suspense>
+                                    <div className="mb-6 flex w-full justify-between text-sm opacity-50">
+                                        <div>time: {result.offset}</div>
+
+                                        <Suspense fallback={null}>
+                                            <Score value={result.score} />
+                                        </Suspense>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
 
-                    {isFetching && (
+                    {((isFetching && !questionMode) ||
+                        (isFetchingAnswer && questionMode)) && (
                         <div>
                             <div className="mb-6 aspect-video w-full animate-pulse rounded-md bg-black/50"></div>
-                            <div className="mb-6 aspect-video w-full animate-pulse rounded-md bg-black/50"></div>
-                            <div className="mb-6 aspect-video w-full animate-pulse rounded-md bg-black/50"></div>
+                            {!questionMode && (
+                                <>
+                                    <div className="mb-6 aspect-video w-full animate-pulse rounded-md bg-black/50"></div>
+                                    <div className="mb-6 aspect-video w-full animate-pulse rounded-md bg-black/50"></div>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

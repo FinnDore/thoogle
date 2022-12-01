@@ -47,48 +47,23 @@ export interface Url {
     value: Value<string>;
 }
 
-export const searchRouter = router({
-    search: publicProcedure
+export const askRouter = router({
+    askQuestion: publicProcedure
         .input(z.object({ searchTerm: z.string() }).nullish())
         .query(async ({ input, ctx }) => {
             console.log("query", input?.searchTerm);
             try {
-                const res = await ctx.operand.searchWithin({
+                const res = await ctx.operand.answer({
                     query: input?.searchTerm,
                 });
 
-                if (!res.matches) {
-                    return null;
-                }
+                console.log(res.answer?.answer);
 
-                const results = res.matches.map((m) => {
-                    const offset =
-                        (m.extra?.properties as unknown as YoutubeProps)
-                            ?._offset?.value?.value ?? null;
-
-                    return {
-                        // Look the fuck away ok 🔫
-                        url:
-                            (
-                                res.objects[m.objectId]
-                                    ?.properties as unknown as YoutubeObjectProps
-                            )?.properties?._url?.value?.value?.replace(
-                                "watch?v=",
-                                "embed/"
-                            ) +
-                            "?start=" +
-                            offset,
-                        content: m.content,
-                        score: m.score,
-                        offset,
-                    };
-                });
-
-                return results;
+                return res.answer?.answer ?? null;
             } catch (e) {
                 console.error(e);
                 console.error(
-                    `Could not search for term: ${input?.searchTerm} ${e}`
+                    `Could not get awnser: ${input?.searchTerm} ${e}`
                 );
                 throw new TRPCError({
                     message: "Could not search for your term bozo",
