@@ -212,6 +212,8 @@ const Home: NextPage = () => {
                                             <a
                                                 href={result.url}
                                                 className="underline"
+                                                target="_blank"
+                                                rel="noreferrer"
                                             >
                                                 <TimeStamp
                                                     seconds={result.offset}
@@ -260,6 +262,8 @@ const Home: NextPage = () => {
                     href="https://github.com/FinnDore"
                     aria-label="Link to Finns Github"
                     className="underline"
+                    target="_blank"
+                    rel="noreferrer"
                 >
                     Finn
                 </a>
@@ -269,11 +273,13 @@ const Home: NextPage = () => {
 };
 
 const Links = () => (
-    <div className="flex h-4">
+    <div className="my-auto flex h-4">
         <a
             href="https://github.com/FinnDore/thoogle"
             className="theo-cursor mx-2 transition-all hover:contrast-200"
             aria-label="Link to the source code on github"
+            target="_blank"
+            rel="noreferrer"
         >
             <GitHubLogoIcon className="aspect-square h-full w-4" />
         </a>
@@ -282,6 +288,8 @@ const Links = () => (
             className="mx-2 transition-all hover:contrast-200"
             href="https://discord.gg/xHdCpcPHRE"
             aria-label="Link to Theo's discord"
+            target="_blank"
+            rel="noreferrer"
         >
             <picture>
                 <img
@@ -295,6 +303,8 @@ const Links = () => (
             className="mx-2 transition-all hover:contrast-200"
             href="https://twitter.com/t3dotgg"
             aria-label="Link to Theo's twitter"
+            target="_blank"
+            rel="noreferrer"
         >
             <picture>
                 <img
@@ -308,6 +318,8 @@ const Links = () => (
             className="mx-2 transition-all hover:contrast-200"
             href="https://www.youtube.com/c/theobrowne1017"
             aria-label="Link to Theo's youtube"
+            target="_blank"
+            rel="noreferrer"
         >
             <picture>
                 <img
