@@ -18,10 +18,6 @@ export default function document() {
                 <link rel="icon" href="/favicon.ico" />
                 <meta
                     property="og:image"
-                    content="https://thoogle.finndore.dev/api/og"
-                />
-                <meta
-                    property="og:image"
                     content="https://thoogle.finndore.dev/cover.webp"
                 />
                 <meta name="twitter:card" content="summary_large_image"></meta>
