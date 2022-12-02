@@ -209,14 +209,14 @@ const Home: NextPage = () => {
 
                                     <div className="mb-6 flex w-full justify-between text-sm opacity-50">
                                         <Suspense>
-                                            {/* <a
+                                            <a
                                                 href={result.url}
                                                 className="underline"
-                                            > */}
-                                            <TimeStamp
-                                                seconds={result.offset}
-                                            />
-                                            {/* </a> */}
+                                            >
+                                                <TimeStamp
+                                                    seconds={result.offset}
+                                                />
+                                            </a>
                                         </Suspense>
 
                                         <Suspense fallback={null}>
