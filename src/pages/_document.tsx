@@ -20,6 +20,10 @@ export default function document() {
                     property="og:image"
                     content="https://thoogle.finndore.dev/api/og"
                 />
+                <meta
+                    property="og:image"
+                    content="https://thoogle.finndore.dev/cover.webp"
+                />
                 <meta name="twitter:card" content="summary_large_image"></meta>
             </Head>
             <body className=" bg-[#1e2022] text-white ">
