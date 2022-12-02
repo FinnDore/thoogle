@@ -6,8 +6,8 @@ import { lazy, Suspense, useRef, useState } from "react";
 import type { RouterOutputs } from "../utils/trpc";
 import { trpc } from "../utils/trpc";
 
-const Score = lazy(() => import("./_score"));
-const TimeStamp = lazy(() => import("./_time-stamp"));
+const Score = lazy(() => import("../components/_score"));
+const TimeStamp = lazy(() => import("../components/_time-stamp"));
 
 const Home: NextPage = () => {
     // React query sets data to undefined when the query changes / shrug
@@ -209,14 +209,14 @@ const Home: NextPage = () => {
 
                                     <div className="mb-6 flex w-full justify-between text-sm opacity-50">
                                         <Suspense>
-                                            <a
+                                            {/* <a
                                                 href={result.url}
                                                 className="underline"
-                                            >
-                                                <TimeStamp
-                                                    seconds={result.offset}
-                                                />
-                                            </a>
+                                            > */}
+                                            <TimeStamp
+                                                seconds={result.offset}
+                                            />
+                                            {/* </a> */}
                                         </Suspense>
 
                                         <Suspense fallback={null}>
@@ -272,14 +272,14 @@ const Links = () => (
     <div className="flex h-4">
         <a
             href="https://github.com/FinnDore/thoogle"
-            className="theo-cursor mx-2"
+            className="theo-cursor mx-2 transition-all hover:contrast-200"
             aria-label="Link to the source code on github"
         >
             <GitHubLogoIcon className="aspect-square h-full w-4" />
         </a>
 
         <a
-            className="mx-2"
+            className="mx-2 transition-all hover:contrast-200"
             href="https://discord.gg/xHdCpcPHRE"
             aria-label="Link to Theo's discord"
         >
@@ -292,7 +292,7 @@ const Links = () => (
             </picture>
         </a>
         <a
-            className="mx-2"
+            className="mx-2 transition-all hover:contrast-200"
             href="https://twitter.com/t3dotgg"
             aria-label="Link to Theo's twitter"
         >
@@ -305,7 +305,7 @@ const Links = () => (
             </picture>
         </a>
         <a
-            className="mx-2"
+            className="mx-2 transition-all hover:contrast-200"
             href="https://www.youtube.com/c/theobrowne1017"
             aria-label="Link to Theo's youtube"
         >

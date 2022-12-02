@@ -51,13 +51,11 @@ export const askRouter = router({
     askQuestion: publicProcedure
         .input(z.object({ searchTerm: z.string().min(1) }).nullish())
         .query(async ({ input, ctx }) => {
-            console.log("query", input?.searchTerm);
+            console.log("Returning answer", input?.searchTerm);
             try {
                 const res = await ctx.operand.answer({
                     query: input?.searchTerm,
                 });
-
-                console.log(res.answer?.answer);
 
                 return res.answer?.answer ?? null;
             } catch (e) {

@@ -8,7 +8,7 @@
 /** @type {import("next").NextConfig} */
 const config = {
     reactStrictMode: true,
-    swcMinify: false,
+    swcMinify: true,
     i18n: {
         locales: ["en"],
         defaultLocale: "en",

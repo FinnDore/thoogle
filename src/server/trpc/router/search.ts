@@ -51,7 +51,7 @@ export const searchRouter = router({
     search: publicProcedure
         .input(z.object({ searchTerm: z.string().min(1) }).nullish())
         .query(async ({ input, ctx }) => {
-            console.log("query", input?.searchTerm);
+            console.log("Returning results", input?.searchTerm);
             try {
                 const res = await ctx.operand.searchWithin({
                     query: input?.searchTerm,
