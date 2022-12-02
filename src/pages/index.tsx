@@ -122,6 +122,7 @@ const Home: NextPage = () => {
                             onKeyUp={(e) =>
                                 e.key === "Enter" && searchOrAnswer()
                             }
+                            value={query}
                         />
                         <button
                             className=" absolute right-0 flex h-full w-2/12 bg-transparent text-[#C9C9C9]/30 hover:text-white"
