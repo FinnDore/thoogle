@@ -49,7 +49,7 @@ export interface Url {
 
 export const searchRouter = router({
     search: publicProcedure
-        .input(z.object({ searchTerm: z.string().min(1) }).nullish())
+        .input(z.object({ searchTerm: z.string().min(1).max(50) }).nullish())
         .query(async ({ input, ctx }) => {
             console.log("Returning results", input?.searchTerm);
             try {

@@ -105,6 +105,7 @@ const Home: NextPage = () => {
                     </div>
                     <div className="big-shadow min-3rem relative mb-4 flex h-20 w-full justify-center overflow-hidden rounded-2xl border border-[#C9C9C9]/30 bg-[#000]/60 shadow-2xl  md:w-[600px]">
                         <input
+                            maxLength={50}
                             className="text-md w-full rounded-2xl border border-none bg-transparent pr-[16.666667%] pl-8 outline-none "
                             placeholder={
                                 questionMode
