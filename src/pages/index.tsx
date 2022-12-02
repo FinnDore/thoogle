@@ -1,11 +1,13 @@
-import { ArrowRightIcon } from "@radix-ui/react-icons";
+import { ArrowRightIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import { Switch, Thumb } from "@radix-ui/react-switch";
 import { clsx } from "clsx";
 import { type NextPage } from "next";
 import { lazy, Suspense, useRef, useState } from "react";
 import type { RouterOutputs } from "../utils/trpc";
 import { trpc } from "../utils/trpc";
+
 const Score = lazy(() => import("./_score"));
+const TimeStamp = lazy(() => import("./_time-stamp"));
 
 const Home: NextPage = () => {
     // React query sets data to undefined when the query changes / shrug
@@ -16,7 +18,11 @@ const Home: NextPage = () => {
     const answer = useRef<RouterOutputs["askQuestion"]["askQuestion"] | null>(
         null
     );
+
+    const [hasSearched, setHasSearched] = useState(false);
     const [query, setQuery] = useState<string>("");
+    const [questionMode, setQuestionMode] = useState<boolean>(true);
+
     const {
         refetch: search,
         isFetching,
@@ -28,16 +34,18 @@ const Home: NextPage = () => {
             refetchOnWindowFocus: false,
             onError() {
                 results.current = null;
+                setHasSearched(true);
             },
             onSuccess(data) {
                 results.current = data;
+                setHasSearched(true);
             },
         }
     );
     const {
         refetch: getAnswer,
         isFetching: isFetchingAnswer,
-        error: errorAnswer,
+        isError: errorAnswer,
     } = trpc.askQuestion.askQuestion.useQuery(
         { searchTerm: query },
         {
@@ -45,19 +53,38 @@ const Home: NextPage = () => {
             refetchOnWindowFocus: false,
             onError() {
                 answer.current = null;
+                setHasSearched(true);
             },
             onSuccess(data) {
                 answer.current = data;
+                setHasSearched(true);
             },
         }
     );
 
-    const [questionMode, setQuestionMode] = useState<boolean>(false);
-    const searchOrAnswer = () => (questionMode ? getAnswer() : search());
+    const searchOrAnswer = () => {
+        if (query?.length) {
+            questionMode ? getAnswer() : search();
+        }
+    };
+
+    const noAnswer =
+        questionMode &&
+        !isFetchingAnswer &&
+        hasSearched &&
+        !errorAnswer &&
+        !answer.current;
+
+    const noSearchResults =
+        !questionMode &&
+        !isFetching &&
+        hasSearched &&
+        !error &&
+        !results.current?.length;
 
     return (
-        <>
-            <main className="flex h-screen flex-col ">
+        <div className="h-screen">
+            <main className="flex min-h-[calc(100%-4rem)] flex-col">
                 <div className="mx-auto w-[90%] md:mx-auto md:w-auto">
                     <div className="mt-8 mb-4 flex justify-between text-4xl font-bold md:mt-[10vh]">
                         <div>
@@ -78,8 +105,18 @@ const Home: NextPage = () => {
                     </div>
                     <div className="big-shadow min-3rem relative mb-4 flex h-20 w-full justify-center overflow-hidden rounded-2xl border border-[#C9C9C9]/30 bg-[#000]/60 shadow-2xl  md:w-[600px]">
                         <input
-                            className="w-full rounded-2xl border border-none bg-transparent pl-8 text-2xl outline-none"
-                            placeholder="Search Theo's channel"
+                            className="text-md w-full rounded-2xl border border-none bg-transparent pr-[16.666667%] pl-8 outline-none "
+                            placeholder={
+                                questionMode
+                                    ? "Ask Theo a question"
+                                    : "Search Theo's channel"
+                            }
+                            aria-label={
+                                questionMode
+                                    ? "Enter term to see a response from ai theo"
+                                    : "Enter a term to Search Theo's channel"
+                            }
+                            aria-required="true"
                             onChange={(e) => setQuery(e.target.value)}
                             onKeyUp={(e) =>
                                 e.key === "Enter" && searchOrAnswer()
@@ -92,70 +129,95 @@ const Home: NextPage = () => {
                             <ArrowRightIcon className="m-auto h-6 w-6  transition-colors " />
                         </button>
                     </div>
-
-                    <Switch
-                        className="text relative mb-4 ml-auto flex h-8 overflow-hidden rounded-md bg-[#000]/60 text-sm"
-                        onCheckedChange={(e) => {
-                            answer.current = null;
-                            results.current = null;
-                            setQuestionMode(e);
-                            if (query) questionMode ? search() : getAnswer();
-                        }}
-                    >
-                        <div
-                            className={clsx(
-                                "my-auto w-[10ch] flex-1 px-2 transition-opacity",
-                                {
-                                    "opacity-40": !questionMode,
-                                }
-                            )}
+                    <div className="mb-4 flex h-8 w-full ">
+                        <Links />
+                        <Switch
+                            defaultChecked={true}
+                            className="text relative ml-auto flex h-8 overflow-hidden rounded-md bg-[#000]/60 text-sm"
+                            onCheckedChange={(e) => {
+                                answer.current = null;
+                                results.current = null;
+                                setQuestionMode(e);
+                                if (query)
+                                    questionMode ? search() : getAnswer();
+                            }}
                         >
-                            Ask Theo
-                        </div>
-                        <div
-                            className={clsx(
-                                "my-auto w-[10ch] flex-1 px-2 transition-opacity",
-                                {
-                                    "opacity-40": questionMode,
-                                }
-                            )}
-                        >
-                            Search
-                        </div>
-                        <Thumb
-                            className={clsx(
-                                "absolute -top-1 my-1  h-full w-[10ch] bg-white/10 transition-transform",
-                                {
-                                    "translate-x-full": !questionMode,
-                                }
-                            )}
-                        />
-                    </Switch>
+                            <div
+                                className={clsx(
+                                    "my-auto w-[10ch] flex-1 px-2 transition-opacity",
+                                    {
+                                        "opacity-40": !questionMode,
+                                    }
+                                )}
+                            >
+                                Ask Theo
+                            </div>
+                            <div
+                                className={clsx(
+                                    "my-auto w-[10ch] flex-1 px-2 transition-opacity",
+                                    {
+                                        "opacity-40": questionMode,
+                                    }
+                                )}
+                            >
+                                Search
+                            </div>
+                            <Thumb
+                                className={clsx(
+                                    "absolute -top-1 my-1  h-full w-[10ch] bg-white/10 transition-transform",
+                                    {
+                                        "translate-x-full": !questionMode,
+                                    }
+                                )}
+                            />
+                        </Switch>
+                    </div>
 
-                    {questionMode && !isFetchingAnswer && (
+                    {questionMode && !isFetchingAnswer && answer.current && (
                         <div className="mb-auto w-[90%] px-4  md:w-[600px]">
                             <div className="mb-2 text-sm font-bold opacity-50">
-                                Theo would probbally say:
+                                Theo would probably say:
                             </div>
                             {answer.current}
                         </div>
                     )}
+                    {noAnswer && (
+                        <div className="w-full text-center">
+                            Not quite sure what Theo would say. Try another
+                            question.
+                        </div>
+                    )}
+                    {noSearchResults && (
+                        <div className="w-full text-center">
+                            Not results found, try searching something else
+                        </div>
+                    )}
+
                     {!questionMode && !isFetching && (
                         <div className="mb-auto">
                             {results.current?.map((result, i) => (
                                 <div
-                                    key={result.url + i}
-                                    className="w-[90%] md:w-[600px]"
+                                    key={result.embed + i}
+                                    className="w-full md:w-[600px]"
                                 >
                                     <iframe
                                         className="mb-4 aspect-video w-full rounded-md"
-                                        src={result.url}
+                                        src={result.embed}
                                         title={result.content}
                                         allowFullScreen
                                     ></iframe>
 
                                     <div className="mb-6 flex w-full justify-between text-sm opacity-50">
-                                        <div>time: {result.offset}</div>
+                                        <Suspense>
+                                            <a
+                                                href={result.url}
+                                                className="underline"
+                                            >
+                                                <TimeStamp
+                                                    seconds={result.offset}
+                                                />
+                                            </a>
+                                        </Suspense>
 
                                         <Suspense fallback={null}>
                                             <Score value={result.score} />
@@ -185,9 +247,77 @@ const Home: NextPage = () => {
                         Failed to load search results
                     </div>
                 )}
+
+                {errorAnswer && (
+                    <div className="mx-auto text-2xl font-bold text-red-700">
+                        Failed generate answer
+                    </div>
+                )}
             </main>
-        </>
+            <footer className="w-full pb-4 text-center">
+                Made with ❤️ by{" "}
+                <a
+                    href="https://github.com/FinnDore"
+                    aria-label="Link to Finns Github"
+                    className="underline"
+                >
+                    Finn
+                </a>
+            </footer>
+        </div>
     );
 };
+
+const Links = () => (
+    <div className="flex h-4">
+        <a
+            href="https://github.com/FinnDore/thoogle"
+            className="theo-cursor mx-2"
+            aria-label="Link to the source code on github"
+        >
+            <GitHubLogoIcon className="aspect-square h-full w-4" />
+        </a>
+
+        <a
+            className="mx-2"
+            href="https://discord.gg/xHdCpcPHRE"
+            aria-label="Link to Theo's discord"
+        >
+            <picture>
+                <img
+                    src="discord.svg"
+                    alt="The discord logo"
+                    className="aspect-square h-full"
+                />
+            </picture>
+        </a>
+        <a
+            className="mx-2"
+            href="https://twitter.com/t3dotgg"
+            aria-label="Link to Theo's twitter"
+        >
+            <picture>
+                <img
+                    src="twitter.svg"
+                    alt="The twitter logo"
+                    className="aspect-square h-full"
+                />
+            </picture>
+        </a>
+        <a
+            className="mx-2"
+            href="https://www.youtube.com/c/theobrowne1017"
+            aria-label="Link to Theo's youtube"
+        >
+            <picture>
+                <img
+                    src="youtube.png"
+                    alt="The youtube logo"
+                    className="aspect-square h-full"
+                />
+            </picture>
+        </a>
+    </div>
+);
 
 export default Home;

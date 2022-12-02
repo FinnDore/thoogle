@@ -23,3 +23,7 @@ body {
 div:has(input:focus) {
     border-color: white;
 }
+
+.theo-cursor {
+    cursor: url("/a-real-gg.jpg"), auto;
+}

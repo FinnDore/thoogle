@@ -2,7 +2,7 @@ import { scaleLinear } from "@visx/scale";
 
 const scale = scaleLinear({
     domain: [0, 1],
-    range: ["#ff0000", "#00ff00"],
+    range: ["#fc035e", "#ff0", "#00ff00"],
 });
 
 const Score = ({ value }: { value: number }) => (
@@ -12,7 +12,7 @@ const Score = ({ value }: { value: number }) => (
         }}
     >
         {" "}
-        score: {value}
+        score: {(+value?.toPrecision(2) * 100).toPrecision(2)}
     </div>
 );
 

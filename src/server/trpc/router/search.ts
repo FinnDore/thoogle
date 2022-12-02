@@ -49,7 +49,7 @@ export interface Url {
 
 export const searchRouter = router({
     search: publicProcedure
-        .input(z.object({ searchTerm: z.string() }).nullish())
+        .input(z.object({ searchTerm: z.string().min(1) }).nullish())
         .query(async ({ input, ctx }) => {
             console.log("query", input?.searchTerm);
             try {
@@ -65,19 +65,19 @@ export const searchRouter = router({
                     const offset =
                         (m.extra?.properties as unknown as YoutubeProps)
                             ?._offset?.value?.value ?? null;
-
+                    // Look the fuck away ok 🔫
+                    const url =
+                        (
+                            res.objects[m.objectId]
+                                ?.properties as unknown as YoutubeObjectProps
+                        )?.properties?._url?.value?.value ??
+                        "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
                     return {
-                        // Look the fuck away ok 🔫
-                        url:
-                            (
-                                res.objects[m.objectId]
-                                    ?.properties as unknown as YoutubeObjectProps
-                            )?.properties?._url?.value?.value?.replace(
-                                "watch?v=",
-                                "embed/"
-                            ) +
+                        embed:
+                            url.replace("watch?v=", "embed/") +
                             "?start=" +
                             offset,
+                        url: url + "&t=" + offset,
                         content: m.content,
                         score: m.score,
                         offset,
