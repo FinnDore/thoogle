@@ -1,86 +1,79 @@
 import { ArrowRightIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import { Switch, Thumb } from "@radix-ui/react-switch";
 import { clsx } from "clsx";
+import { debounce } from "lodash-es";
 import { type NextPage } from "next";
-import { lazy, Suspense, useRef, useState } from "react";
-import type { RouterOutputs } from "../utils/trpc";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { trpc } from "../utils/trpc";
 
 const Score = lazy(() => import("../components/_score"));
 const TimeStamp = lazy(() => import("../components/_time-stamp"));
 
 const Home: NextPage = () => {
-    // React query sets data to undefined when the query changes / shrug
-    const results = useRef<RouterOutputs["searchContent"]["search"] | null>(
-        null
-    );
-
-    const answer = useRef<RouterOutputs["askQuestion"]["askQuestion"] | null>(
-        null
-    );
-
     const [hasSearched, setHasSearched] = useState(false);
     const [query, setQuery] = useState<string>("");
     const [questionMode, setQuestionMode] = useState<boolean>(true);
 
     const {
+        data: results,
         refetch: search,
-        isFetching,
-        error,
+        isFetching: isLoadingSearch,
+        isError: isErrorSearch,
     } = trpc.searchContent.search.useQuery(
         { searchTerm: query },
         {
-            enabled: false,
+            enabled: !questionMode && !!query,
             refetchOnWindowFocus: false,
             onError() {
-                results.current = null;
                 setHasSearched(true);
             },
-            onSuccess(data) {
-                results.current = data;
+            onSuccess() {
                 setHasSearched(true);
             },
         }
     );
+
     const {
+        data: answer,
         refetch: getAnswer,
-        isFetching: isFetchingAnswer,
-        isError: errorAnswer,
+        isFetching: isLoadingAnswer,
+        isError: isErrorAnswer,
     } = trpc.askQuestion.askQuestion.useQuery(
         { searchTerm: query },
         {
-            enabled: false,
+            enabled: questionMode && !!query,
             refetchOnWindowFocus: false,
             onError() {
-                answer.current = null;
                 setHasSearched(true);
             },
-            onSuccess(data) {
-                answer.current = data;
+            onSuccess() {
                 setHasSearched(true);
             },
         }
     );
 
     const searchOrAnswer = () => {
-        if (query?.length) {
-            questionMode ? getAnswer() : search();
-        }
+        questionMode ? getAnswer() : search();
     };
+
+    const throttledSetQuery = useMemo(
+        () => debounce(setQuery, 750),
+        [setQuery]
+    );
 
     const noAnswer =
         questionMode &&
-        !isFetchingAnswer &&
+        !isLoadingAnswer &&
         hasSearched &&
-        !errorAnswer &&
-        !answer.current;
+        !isErrorAnswer &&
+        !answer;
 
     const noSearchResults =
         !questionMode &&
-        !isFetching &&
+        !isLoadingSearch &&
         hasSearched &&
-        !error &&
-        !results.current?.length;
+        !isErrorSearch &&
+        !results?.length;
 
     return (
         <div className="h-screen">
@@ -118,11 +111,10 @@ const Home: NextPage = () => {
                                     : "Enter a term to Search Theo's channel"
                             }
                             aria-required="true"
-                            onChange={(e) => setQuery(e.target.value)}
+                            onChange={(e) => throttledSetQuery(e.target.value)}
                             onKeyUp={(e) =>
                                 e.key === "Enter" && searchOrAnswer()
                             }
-                            value={query}
                         />
                         <button
                             className=" absolute right-0 flex h-full w-2/12 bg-transparent text-[#C9C9C9]/30 hover:text-white"
@@ -136,13 +128,7 @@ const Home: NextPage = () => {
                         <Switch
                             defaultChecked={true}
                             className="text relative ml-auto flex h-8 overflow-hidden rounded-md bg-[#000]/60 text-sm"
-                            onCheckedChange={(e) => {
-                                answer.current = null;
-                                results.current = null;
-                                setQuestionMode(e);
-                                if (query)
-                                    questionMode ? search() : getAnswer();
-                            }}
+                            onCheckedChange={(e) => setQuestionMode(e)}
                         >
                             <div
                                 className={clsx(
@@ -175,29 +161,18 @@ const Home: NextPage = () => {
                         </Switch>
                     </div>
 
-                    {questionMode && !isFetchingAnswer && answer.current && (
+                    {questionMode && !isLoadingAnswer && answer && (
                         <div className="mb-auto w-[90%] px-4  md:w-[600px]">
                             <div className="mb-2 text-sm font-bold opacity-50">
                                 Theo would probably say:
                             </div>
-                            {answer.current}
-                        </div>
-                    )}
-                    {noAnswer && (
-                        <div className="w-full text-center">
-                            Not quite sure what Theo would say. Try another
-                            question.
-                        </div>
-                    )}
-                    {noSearchResults && (
-                        <div className="w-full text-center">
-                            Not results found, try searching something else
+                            {answer}
                         </div>
                     )}
 
-                    {!questionMode && !isFetching && (
+                    {!questionMode && !isLoadingSearch && (
                         <div className="mb-auto">
-                            {results.current?.map((result, i) => (
+                            {results?.map((result, i) => (
                                 <div
                                     key={result.embed + i}
                                     className="w-full md:w-[600px]"
@@ -232,8 +207,33 @@ const Home: NextPage = () => {
                         </div>
                     )}
 
-                    {((isFetching && !questionMode) ||
-                        (isFetchingAnswer && questionMode)) && (
+                    {noAnswer && (
+                        <div className="w-full text-center">
+                            Not quite sure what Theo would say. Try another
+                            question.
+                        </div>
+                    )}
+
+                    {noSearchResults && (
+                        <div className="w-full text-center">
+                            Not results found, try searching something else
+                        </div>
+                    )}
+
+                    {isErrorSearch && (
+                        <div className="mx-auto w-full text-center text-2xl text-red-700">
+                            Failed to load search results
+                        </div>
+                    )}
+
+                    {isErrorAnswer && (
+                        <div className="mx-auto w-full text-center  text-rose-700">
+                            Failed generate answer
+                        </div>
+                    )}
+
+                    {((isLoadingSearch && !questionMode) ||
+                        (isLoadingAnswer && questionMode)) && (
                         <div>
                             <div className="mb-6 aspect-video w-full animate-pulse rounded-md bg-black/50"></div>
                             {!questionMode && (
@@ -245,18 +245,6 @@ const Home: NextPage = () => {
                         </div>
                     )}
                 </div>
-
-                {error && (
-                    <div className="mx-auto text-2xl font-bold text-red-700">
-                        Failed to load search results
-                    </div>
-                )}
-
-                {errorAnswer && (
-                    <div className="mx-auto text-2xl font-bold text-red-700">
-                        Failed generate answer
-                    </div>
-                )}
             </main>
             <footer className="w-full pb-4 text-center">
                 Made with ❤️ by{" "}
