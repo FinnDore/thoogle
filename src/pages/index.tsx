@@ -220,13 +220,13 @@ const Home: NextPage = () => {
                         </div>
                     )}
 
-                    {isErrorSearch && (
+                    {isErrorSearch && !questionMode && (
                         <div className="mx-auto w-full text-center text-2xl text-red-700">
                             Failed to load search results
                         </div>
                     )}
 
-                    {isErrorAnswer && (
+                    {isErrorAnswer && questionMode && (
                         <div className="mx-auto w-full text-center  text-rose-700">
                             Failed generate answer
                         </div>
