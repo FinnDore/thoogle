@@ -9,6 +9,15 @@ import { trpc } from "../utils/trpc";
 const Score = lazy(() => import("../components/_score"));
 const TimeStamp = lazy(() => import("../components/_time-stamp"));
 
+const trackSearch = (
+    type: "search" | "answer",
+    { query, error }: { query: string; error: boolean }
+) => {
+    if (typeof window !== "undefined" && window.umami) {
+        window.umami.trackEvent(type, { query, error });
+    }
+};
+
 const Home: NextPage = () => {
     const [hasSearched, setHasSearched] = useState(false);
     const [query, setQuery] = useState<string>("");
@@ -25,9 +34,11 @@ const Home: NextPage = () => {
             enabled: !questionMode && !!query,
             refetchOnWindowFocus: false,
             onError() {
+                trackSearch("search", { query, error: true });
                 setHasSearched(true);
             },
             onSuccess() {
+                trackSearch("search", { query, error: false });
                 setHasSearched(true);
             },
         }
@@ -44,9 +55,11 @@ const Home: NextPage = () => {
             enabled: questionMode && !!query,
             refetchOnWindowFocus: false,
             onError() {
+                trackSearch("answer", { query, error: true });
                 setHasSearched(true);
             },
             onSuccess() {
+                trackSearch("answer", { query, error: false });
                 setHasSearched(true);
             },
         }
@@ -55,7 +68,6 @@ const Home: NextPage = () => {
     const searchOrAnswer = () => {
         questionMode ? getAnswer() : search();
     };
-
     const throttledSetQuery = useMemo(
         () => debounce(setQuery, 750),
         [setQuery]
@@ -323,3 +335,16 @@ const Links = () => (
 );
 
 export default Home;
+
+declare global {
+    interface Window {
+        umami?: {
+            trackEvent: (
+                event: string,
+                data?: Record<string, string | number | boolean>,
+                url?: string,
+                websiteId?: string
+            ) => void;
+        };
+    }
+}
