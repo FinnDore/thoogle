@@ -207,26 +207,26 @@ const Home: NextPage = () => {
                         </div>
                     )}
 
-                    {noAnswer && (
+                    {noAnswer && !!query && (
                         <div className="w-full text-center">
                             Not quite sure what Theo would say. Try another
                             question.
                         </div>
                     )}
 
-                    {noSearchResults && (
+                    {noSearchResults && !!query && (
                         <div className="w-full text-center">
                             Not results found, try searching something else
                         </div>
                     )}
 
-                    {isErrorSearch && !questionMode && (
+                    {isErrorSearch && !questionMode && !!query && (
                         <div className="mx-auto w-full text-center text-2xl text-red-700">
                             Failed to load search results
                         </div>
                     )}
 
-                    {isErrorAnswer && questionMode && (
+                    {isErrorAnswer && questionMode && !!query && (
                         <div className="mx-auto w-full text-center  text-rose-700">
                             Failed generate answer
                         </div>
